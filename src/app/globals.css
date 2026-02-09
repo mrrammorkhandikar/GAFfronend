@@ -1,15 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Custom font variables */
+  --font-poppins: 'Poppins', sans-serif;
+  --font-playfair-display: 'Playfair Display', serif;
+  
+  /* Color variables from style guide */
+  --color-cream: #fcf9e3;
+  --color-gold: #FFD700;
+  --color-dark-red: #6D190D;
+  --color-dark-gray: #222222;
+  --color-medium-gray: #808080;
+  --color-light-gray: #f5f5f5;
+  --color-yellow: #D4A71C;
+  --color-semi-yellow: #f2e57f;
+  --color-footer-cream: #FFFBEF;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins);
+  --font-mono: 'Courier New', monospace;
+  
+  /* Custom color extensions */
+  --color-cream: var(--color-cream);
+  --color-gold: var(--color-gold);
+  --color-dark-red: var(--color-dark-red);
+  --color-dark-gray: var(--color-dark-gray);
+  --color-medium-gray: var(--color-medium-gray);
+  --color-light-gray: var(--color-light-gray);
+  --color-yellow: var(--color-yellow);
+  --color-semi-yellow: var(--color-semi-yellow);
+  --color-footer-cream: var(--color-footer-cream);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +48,70 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins);
+}
+
+/* Custom utility classes based on style guide */
+.bg-cream { background-color: var(--color-cream); }
+.bg-gold { background-color: var(--color-gold); }
+.bg-dark-red { background-color: var(--color-dark-red); }
+.bg-dark-gray { background-color: var(--color-dark-gray); }
+.bg-medium-gray { background-color: var(--color-medium-gray); }
+.bg-light-gray { background-color: var(--color-light-gray); }
+.bg-footer-cream { background-color: var(--color-footer-cream); }
+.bg-semi-yellow { background-color: #f2e57f80; }
+
+text-dark-red { color: var(--color-dark-red); }
+text-dark-gray { color: var(--color-dark-gray); }
+text-medium-gray { color: var(--color-medium-gray); }
+text-gold { color: var(--color-gold); }
+text-yellow { color: var(--color-yellow); }
+
+.font-playfair { font-family: var(--font-playfair-display); }
+.font-poppins { font-family: var(--font-poppins); }
+
+/* Button styles */
+.btn-gold {
+  @apply bg-gold text-dark-gray px-6 py-3 rounded-lg font-medium hover:bg-yellow transition-colors shadow-md;
+}
+
+.btn-dark-red {
+  @apply bg-dark-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-900 transition-colors;
+}
+
+/* Card hover effects */
+.card-hover-gold {
+  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+/* Section padding */
+.section-padding {
+  @apply py-20;
+}
+
+@media (max-width: 768px) {
+  .section-padding {
+    @apply py-12;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
 }
