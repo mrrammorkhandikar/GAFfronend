@@ -1,6 +1,14 @@
 // Site API Service for frontend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
+// Log configuration on load (client-side only)
+if (typeof window !== 'undefined') {
+  console.log('SiteApiService Config:', {
+    API_BASE_URL,
+    NODE_ENV: process.env.NODE_ENV
+  });
+}
+
 class SiteApiService {
   // Generic API call without authentication
   static async apiCall(endpoint, options = {}) {
@@ -11,7 +19,7 @@ class SiteApiService {
 
     // Debug: Log the full URL being called
     const fullUrl = `${API_BASE_URL}${endpoint}`;
-    console.log('API Call URL:', fullUrl);
+    console.log(`[SiteApi] Requesting: ${fullUrl}`);
 
     try {
       const response = await fetch(fullUrl, {
@@ -21,7 +29,7 @@ class SiteApiService {
 
       // Check if response is OK
       if (!response.ok) {
-        // Handle different HTTP status codes
+        console.error(`[SiteApi] Error ${response.status}: ${response.statusText}`);
         return {
           success: false,
           message: `HTTP error! status: ${response.status}`,
@@ -31,8 +39,8 @@ class SiteApiService {
       
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text(); // Read response as text if not JSON
-        console.error('Non-JSON response received:', text);
+        const text = await response.text(); 
+        console.error('[SiteApi] Non-JSON response:', text.substring(0, 200));
         return {
           success: false,
           message: 'Server returned non-JSON response',
@@ -42,32 +50,28 @@ class SiteApiService {
       
       const data = await response.json();
       
-      // If the backend response already follows the { success, data } pattern, return it directly
+      // If the backend response already follows the { success, data } pattern
       if (data && typeof data === 'object' && 'success' in data) {
         return data;
       }
                 
-      // Return successful response with data
       return {
         success: true,
         data: data
       };
     } catch (error) {
-      console.error('API call error:', error)
+      console.error('[SiteApi] Fetch error:', error)
 
-      // Provide more specific error messages
       let message = 'Network error occurred'
       if (error.message.includes('Failed to fetch')) {
-        message = 'Unable to connect to server. Please check if the backend is running.'
-      } else if (error.message.includes('non-JSON')) {
-        message = 'Server returned invalid response format'
-      } else if (error.message.includes('HTTP error')) {
-        message = `Server error: ${error.message}`
+        message = 'Unable to connect to server. Check CORS configuration or if server is running.'
+        console.warn('CORS Hint: Ensure NEXT_PUBLIC_API_URL matches the backend URL and the backend allows this origin.');
       }
 
       return {
         success: false,
-        message
+        message,
+        error: error.toString()
       }
     }
   }

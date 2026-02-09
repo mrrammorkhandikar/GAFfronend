@@ -1,13 +1,19 @@
 // Admin API Service for frontend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
+// Log configuration on load (client-side only)
+if (typeof window !== 'undefined') {
+  console.log('AdminApiService Config:', {
+    API_BASE_URL,
+    NODE_ENV: process.env.NODE_ENV
+  });
+}
+
 class AdminApiService {
   // Authentication
   static async adminLogin(credentials) {
     try {
-      console.log('API Base URL:', API_BASE_URL);
-      console.log('Full URL:', `${API_BASE_URL}/admin/login`);
-      console.log('Credentials:', credentials);
+      console.log(`[AdminApi] Login Request to: ${API_BASE_URL}/admin/login`);
       
       const response = await fetch(`${API_BASE_URL}/admin/login`, {
         method: 'POST',
@@ -17,16 +23,16 @@ class AdminApiService {
         body: JSON.stringify(credentials),
       })
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', [...response.headers.entries()]);
-      
       // Check if response is OK
       if (!response.ok) {
+        console.error(`[AdminApi] Login Error ${response.status}: ${response.statusText}`);
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('[AdminApi] Login Non-JSON response:', text.substring(0, 200));
         throw new Error('Received non-JSON response')
       }
       
@@ -46,15 +52,13 @@ class AdminApiService {
       
       return data
     } catch (error) {
-      console.error('Login error:', error)
-      console.error('Error name:', error.name)
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
+      console.error('[AdminApi] Login error:', error)
       
       // Provide more specific error messages
       let message = 'Network error occurred'
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        message = 'Unable to connect to server. Please check if the backend is running on port 3001.'
+        message = 'Unable to connect to server. Check CORS configuration or if server is running.'
+        console.warn('CORS Hint: Ensure NEXT_PUBLIC_API_URL matches the backend URL and the backend allows this origin.');
       } else if (error.message.includes('non-JSON')) {
         message = 'Server returned invalid response format'
       } else if (error.message.includes('HTTP error')) {
@@ -115,31 +119,39 @@ class AdminApiService {
       // Add token to headers for authenticated requests
       headers['Authorization'] = `Bearer ${token}`
     }
+
+    // Debug: Log the full URL being called
+    const fullUrl = `${API_BASE_URL}${endpoint}`;
+    console.log(`[AdminApi] Requesting: ${fullUrl}`);
     
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         ...options,
         headers
       })
       
       // Check if response is OK
       if (!response.ok) {
+        console.error(`[AdminApi] Error ${response.status}: ${response.statusText}`);
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('[AdminApi] Non-JSON response:', text.substring(0, 200));
         throw new Error('Received non-JSON response')
       }
       
       return await response.json()
     } catch (error) {
-      console.error('API call error:', error)
+      console.error('[AdminApi] Fetch error:', error)
       
       // Provide more specific error messages
       let message = 'Network error occurred'
       if (error.message.includes('Failed to fetch')) {
-        message = 'Unable to connect to server. Please check if the backend is running.'
+        message = 'Unable to connect to server. Check CORS configuration or if server is running.'
+        console.warn('CORS Hint: Ensure NEXT_PUBLIC_API_URL matches the backend URL and the backend allows this origin.');
       } else if (error.message.includes('non-JSON')) {
         message = 'Server returned invalid response format'
       } else if (error.message.includes('HTTP error')) {
@@ -148,7 +160,8 @@ class AdminApiService {
       
       return {
         success: false,
-        message
+        message,
+        error: error.toString()
       }
     }
   }
